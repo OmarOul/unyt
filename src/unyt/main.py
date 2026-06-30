@@ -59,6 +59,15 @@ UNITS = { # --- LENGTH ----
          "fahrenheit": UnitDef(dimension = "TEMPERATURE", scale = 5/9, offset = (5/9)*459.67) 
         }
 
+# Affine functions
+
+def affine_transformation(value: float, scale: float, offset: float):
+    return scale*value + offset
+
+
+def inverse_affine_transformation(value: float, scale: float, offset: float):
+    return (1/scale)*value - offset/scale
+
 # CLI commands
 
 @app.command()
