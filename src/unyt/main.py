@@ -6,7 +6,7 @@ between units.
 For each dimension, a canonical unit is chosen, and two affine transformations are performed to convert from a
 start_unit to a dest_unit. A concrete example:
 
-    LENGHT -> Meters as canonical unit
+    LENGTH -> Meters as canonical unit
 
     Feet to Kilometers: Feet -> Meters --> Kilometers
 
@@ -34,12 +34,16 @@ BASE_UNITS = {
 
 #Unit definitions
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class UnitDef:
 
     dimension: str
     scale: float
     offset: float = 0.0
+
+    def __post_init__(self) -> None:
+        if self.scale <= 0:
+            raise ValueError(f"scale must be positive, got {self.scale}")
 
 #Currently implemented unit.
 
@@ -109,11 +113,11 @@ def convert(start_unit: Annotated[str, typer.Argument(help="Unit to convert from
         print("[bold red]Same unit conversion![/bold red]")
         raise typer.Exit(code=1)
     #check if supported
-    if not start_unit in UNITS or not dest_unit in UNITS:
+    if start_unit not in UNITS or dest_unit not in UNITS:
         print("[bold red]Unit not supported![/bold red]")
         raise typer.Exit(code=1)
     #check if dimensions match
-    if not UNITS[start_unit].dimension == UNITS[dest_unit].dimension:
+    if UNITS[start_unit].dimension != UNITS[dest_unit].dimension:
         print("[bold red]Requested units do not share dimensions![/bold red]")
         raise typer.Exit(code=1)
     #conversion: start_unit --> base
