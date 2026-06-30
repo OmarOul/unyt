@@ -81,12 +81,4 @@ $$
 
 And we arrive at our result.
 
-Let's compare to a direct conversion approach. With three temp scales the
-canonical approach above needs four parameters total: $s_C$, $o_C$, $s_F$, $o_F$. Kelvin, as the reference, needs none.
-If instead we wanted to support direct transformations between every pair without going through a reference unit, we'd
-need a scale and offset for each of the three possible pairs (Celsius–Fahrenheit, Celsius–Kelvin, Fahrenheit–Kelvin),
-for a total of six parameters. Three units is too small a set to make the gap dramatic, but the two approaches scale
-very differently as more units are added: the number of pairs (and therefore parameters) in the direct approach grows
-quadratically with the number of units, while the canonical approach only ever needs two parameters per unit, growing
-linearly. This project currently supports five units of legnth: direct would mean ten pairs and twenty parameters, while the canonical approach still only needs eight.
 
