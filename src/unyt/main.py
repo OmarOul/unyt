@@ -113,14 +113,18 @@ def convert(start_unit: Annotated[str, typer.Argument(help="Unit to convert from
         print("[bold red]Requested units do not share dimensions![/bold red]")
         raise typer.Exit(code=1)
     #conversion: start_unit --> base
-    base_unit_measure: float = UNITS[start_unit].scale*value + UNITS[start_unit].offset
+    base_unit_measure: float = affine_transformation(value, 
+                                                     UNITS[start_unit].scale,
+                                                     UNITS[start_unit].offset
+                                                     )
     #conversion: base --> dest_unit
-    dest_unit_measure: float = (1/UNITS[dest_unit].scale)*base_unit_measure - UNITS[dest_unit].offset/UNITS[dest_unit].scale
+    dest_unit_measure: float = inverse_affine_transformation(base_unit_measure,
+                                                             UNITS[end_unit].scale,
+                                                             UNITS[end_unit].offset
+                                                             )
 
     print(f'[bold]{value} {start_unit}[/bold] equals [bold]{dest_unit_measure:.6f} {dest_unit}[/bold]')
     return
 
 
 
-if __name__ == "__main__":
-    app()

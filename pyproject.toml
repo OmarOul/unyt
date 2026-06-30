@@ -1,7 +1,7 @@
 [project]
 name = "unyt"
 version = "0.1.0"
-description = "Add your description here"
+description = "A simple unit conversion tool"
 readme = "README.md"
 authors = [
     { name = "omaro", email = "omar.oul@proton.me" }
@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-unyt = "unyt:main"
+unyt = "unyt.main:app"
 
 [build-system]
 requires = ["uv_build>=0.10.0,<0.11.0"]
