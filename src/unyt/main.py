@@ -119,8 +119,8 @@ def convert(start_unit: Annotated[str, typer.Argument(help="Unit to convert from
                                                      )
     #conversion: base --> dest_unit
     dest_unit_measure: float = inverse_affine_transformation(base_unit_measure,
-                                                             UNITS[end_unit].scale,
-                                                             UNITS[end_unit].offset
+                                                             UNITS[dest_unit].scale,
+                                                             UNITS[dest_unit].offset
                                                              )
 
     print(f'[bold]{value} {start_unit}[/bold] equals [bold]{dest_unit_measure:.6f} {dest_unit}[/bold]')
