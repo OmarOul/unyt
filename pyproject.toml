@@ -1,0 +1,19 @@
+[project]
+name = "unyt"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "omaro", email = "omar.oul@proton.me" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "typer>=0.26.8",
+]
+
+[project.scripts]
+unyt = "unyt:main"
+
+[build-system]
+requires = ["uv_build>=0.10.0,<0.11.0"]
+build-backend = "uv_build"
