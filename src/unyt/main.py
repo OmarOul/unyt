@@ -24,12 +24,12 @@ from rich.table import Table
 app = typer.Typer()
 console = Console()
 
-#Canonical units definitions.
+#Base units definitions. As reference, and used for CLI options
 
-CAN_UNITS = {
-        "meters": "LENGTH",
-        "kg": "MASS",
-        "kelvin": "TEMPERATURE"
+BASE_UNITS = {
+        "LENGTH": "meters",
+        "MASS": "kg",
+        "TEMPERATURE": "kelvin"
         }
 
 #Unit definitions
@@ -44,27 +44,20 @@ class UnitDef:
 #Currently implemented unit.
 
 UNITS = { # --- LENGTH ----
-        "meters": "canonical",
+        "meters": UnitDef(dimension = "LENGTH", scale = 1.0),
         "km":     UnitDef(dimension = "LENGTH", scale = 1000.0),
         "feet":   UnitDef(dimension = "LENGTH", scale = 0.3048),
         "miles":  UnitDef(dimension = "LENGTH", scale = 1609.344),
         "nautical_miles": UnitDef(dimension = "LENGTH", scale = 1852),
          # --- MASS ---
-        "kg": "canonical",
+        "kg": UnitDef(dimension = "MASS", scale = 1.0),
         "g":  UnitDef(dimension = "MASS", scale = 0.001),
          # --- TEMPERATURE ---
-         "kelvin": "canonical",
+         #kelvin does not require to assign offset, since 0 is the default. Done for consistency with other temps
+         "kelvin": UnitDef(dimension = "TEMPERATURE", scale = 1.0, offset = 0.0),
          "celsius": UnitDef(dimension = "TEMPERATURE", scale = 1.0, offset = 273.15),
          "fahrenheit": UnitDef(dimension = "TEMPERATURE", scale = 5/9, offset = (5/9)*459.67) 
         }
-
-#Affine functions
-
-def affine_conversion(value: float, scale: float, offset: float) -> float:
-    return scale*value + offset
-
-def inverse_affine_conversion(value: float, scale:float, offset: float) -> float:
-    return (1/scale)*value - (offset/scale)
 
 # CLI commands
 
@@ -82,7 +75,7 @@ def list_units(dimension: Annotated[str, typer.Option(help="Shows units only fro
             table.add_row(unit, UNITS[unit].dimension)
     else:
 
-        if dimension.upper() not in CAN_UNITS.values():
+        if dimension.upper() not in BASE_UNITS:
             raise ValueError("Dimension not supported!")
         for unit in UNITS:
             if UNITS[unit].dimension == dimension.upper(): table.add_row(unit, UNITS[unit].dimension)
@@ -102,62 +95,18 @@ def convert(start_unit: Annotated[str, typer.Argument(help="Unit to convert from
     start_unit = start_unit.lower()
     dest_unit  = dest_unit.lower()
 
-    start_is_canonical: bool = False
-    dest_is_canonical:  bool = False
-
-    start_dimension: str
-    dest_dimension: str
-
-    #check if same
-    if start_unit == dest_unit:
-        print("[bold red]Same unit conversion![/bold red]")
-        raise typer.Exit(code=1)
-
     #check if supported
     if not start_unit in UNITS or not dest_unit in UNITS:
         print("[bold red]Unit not supported![/bold red]")
         raise typer.Exit(code=1)
-
-    #Check if any of the units is one of the canonicals and store dimensions
-    if start_unit in CAN_UNITS:
-        start_is_canonical = True
-        start_dimension = CAN_UNITS[start_unit]
-        dest_dimension = UNITS[dest_unit].dimension
-    elif dest_unit in CAN_UNITS:
-        dest_is_canonical = True
-        dest_dimension = CAN_UNITS[dest_unit]
-        start_dimension = UNITS[start_unit].dimension
-    else:
-        dest_dimension = UNITS[dest_unit].dimension
-        start_dimension = UNITS[start_unit].dimension
-
-        #check if dimensions match
-    if not start_dimension == dest_dimension:
+    #check if dimensions match
+    if not UNITS[start_unit].dimension == UNITS[dest_unit].dimension:
         print("[bold red]Requested units do not share dimensions![/bold red]")
         raise typer.Exit(code=1)
-
-    #Conversion, three different cases.
-
-    if start_is_canonical:
-        dest_unit_measure = inverse_affine_conversion(value,
-                                                      UNITS[dest_unit].scale,
-                                                      UNITS[dest_unit].offset
-                                                    )
-    elif dest_is_canonical:
-        dest_unit_measure = affine_conversion(value,
-                                              UNITS[start_unit].scale,
-                                              UNITS[start_unit].offset
-                                            )
-    else:
-        canonical_unit_measure = affine_conversion(value,
-                                              UNITS[start_unit].scale,
-                                              UNITS[start_unit].offset
-                                            )
-
-        dest_unit_measure = inverse_affine_conversion(canonical_unit_measure,
-                                                      UNITS[dest_unit].scale,
-                                                      UNITS[dest_unit].offset
-                                                    )
+    #conversion: start_unit --> base
+    base_unit_measure: float = UNITS[start_unit].scale*value + UNITS[start_unit].offset
+    #conversion: base --> dest_unit
+    dest_unit_measure: float = (1/UNITS[dest_unit].scale)*base_unit_measure - UNITS[dest_unit].offset/UNITS[dest_unit].scale
 
     print(f'[bold]{value} {start_unit}[/bold] equals [bold]{dest_unit_measure:.6f} {dest_unit}[/bold]')
     return
