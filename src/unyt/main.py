@@ -61,17 +61,17 @@ UNITS = { # --- LENGTH ----
 
 # Affine functions
 
-def affine_transformation(value: float, scale: float, offset: float):
+def affine_transformation(value: float, scale: float, offset: float) -> float:
     return scale*value + offset
 
 
-def inverse_affine_transformation(value: float, scale: float, offset: float):
+def inverse_affine_transformation(value: float, scale: float, offset: float) -> float:
     return (1/scale)*value - offset/scale
 
 # CLI commands
 
 @app.command()
-def list_units(dimension: Annotated[str, typer.Option(help="Shows units only from the given dimension")] = ""):
+def list_units(dimension: Annotated[str, typer.Option(help="Shows units only from the given dimension")] = "") -> None:
     """
     Lists currently available units
     """
@@ -85,7 +85,8 @@ def list_units(dimension: Annotated[str, typer.Option(help="Shows units only fro
     else:
 
         if dimension.upper() not in BASE_UNITS:
-            raise ValueError("Dimension not supported!")
+            print("[bold red]Dimension not supported![/bold red]")
+            raise typer.Exit(code=1)
         for unit in UNITS:
             if UNITS[unit].dimension == dimension.upper(): table.add_row(unit, UNITS[unit].dimension)
 
@@ -94,7 +95,7 @@ def list_units(dimension: Annotated[str, typer.Option(help="Shows units only fro
 @app.command()
 def convert(start_unit: Annotated[str, typer.Argument(help="Unit to convert from")],
             dest_unit: Annotated[str, typer.Argument(help="Unit to convert to")],
-            value: Annotated[float, typer.Argument(help="Numerical value to convert")]) -> int:
+            value: Annotated[float, typer.Argument(help="Numerical value to convert")]) -> None:
 
     """
     Performs a units conversion
@@ -104,6 +105,9 @@ def convert(start_unit: Annotated[str, typer.Argument(help="Unit to convert from
     start_unit = start_unit.lower()
     dest_unit  = dest_unit.lower()
 
+    if start_unit == dest_unit:
+        print("[bold red]Same unit conversion![/bold red]")
+        raise typer.Exit(code=1)
     #check if supported
     if not start_unit in UNITS or not dest_unit in UNITS:
         print("[bold red]Unit not supported![/bold red]")
