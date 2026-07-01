@@ -93,7 +93,8 @@ def convert(start_unit: Annotated[str, typer.Argument(help="Unit to convert from
                                                              )
 
     print(f'[bold]{value} {start_unit}[/bold] equals [bold]{dest_unit_measure:.6f} {dest_unit}[/bold]')
-    return
+    # the return value here is used for testing
+    return dest_unit_measure
 
 
 
